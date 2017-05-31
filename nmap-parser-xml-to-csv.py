@@ -77,7 +77,6 @@ def NmapXmlParser(filenames, options):
 	enddate = [enddate.getAttribute('timestr') for enddate in nmap_footer[0].getElementsByTagName('finished')]
 
         for hosttag in domNmap.getElementsByTagName('host'):
-
             for port in hosttag.getElementsByTagName('port'):
             	scriptFound = False
             	row = ['|'.join(date)]
@@ -89,19 +88,19 @@ def NmapXmlParser(filenames, options):
             	row.append('|'.join(vendors))
 		### Remove all hostname(user,ptr) to be just user type only.
             	# hostnames = [hostname.getAttribute('name') for hostname in hosttag.getElementsByTagName('hostname')]
-            	hostnames = [hostname.getAttribute('name') for hostname in hosttag.getElementsByTagName('hostname')] # if hostname.getAttribute('type') == 'user']
+            	hostnames = [hostname.getAttribute('name') for hostname in hosttag.getElementsByTagName('hostname')  if hostname.getAttribute('type') == 'user']
             	row.append('|'.join(hostnames))
 		row.append(port.getAttribute('portid'))
-		for state in port.getElementsByTagName('state'):
-			row.append(state.getAttribute('state'))
+		for service in port.getElementsByTagName('service'):
+			row.append(service.getAttribute('product') + " " + service.getAttribute('version') + " " + service.getAttribute('extrainfo'))
 		for service in port.getElementsByTagName('service'):
 			row.append(service.getAttribute('name'))
-            if hosttag.getElementsByTagName('script'):
-                scriptFound = True
-                for script in hosttag.getElementsByTagName('script'):
-                    row.append(script.getAttribute('id'))
-                    row.append(repr(script.getAttribute('output').encode('ascii').replace('\n  ','')))
-            oOuput.Row(row)
+		if port.getElementsByTagName('script'):
+			scriptFound = True
+			for script in port.getElementsByTagName('script'):
+				row.append(script.getAttribute('id'))
+				row.append(repr(script.getAttribute('output').encode('ascii').replace('\n  ','')))
+		oOuput.Row(row)
     oOuput.Close()
 
 def File2Strings(filename):
@@ -131,7 +130,6 @@ def ExpandFilenameArguments(filenames):
 
 def Main():
     moredesc = '''
-
 Arguments:
 @file: process each file listed in the text file specified
 wildcards are supported'''
